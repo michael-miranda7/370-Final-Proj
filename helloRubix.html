@@ -342,87 +342,24 @@
 			 for (var i = 0; i < 16; i++){
 				transMats[i] = transMat[i];
 				}
+			for(i = 0; i < 3; i++){
+				for(j = 0; j < 3; j++){
+					for(l = 0; l < 3; l++){
+					transMats[12] = (transMat[12]-0.4)+ i*0.4;
+					transMats[13] = (transMat[13]-0.4)+ j*0.4;
+					transMats[14] = (transMat[14]-0.8)+ l*0.4;
+					var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+					gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+					//Draw the triangle
+					gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+					}
+				}
+			}
+					
 			
-				//Second Cube
-			 transMats[12] = transMat[12]+0.5;
-			 transMats[13] = transMat[13]+0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 3
-			 
-			 transMats[12] = transMat[12] + 0.5;
-			 transMats[13] = transMat[13];
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 4
-			 
-			 transMats[12] = transMat[12]+0.5;
-			 transMats[13] = transMat[13]-0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 5
-			 
-			 transMats[12] = transMat[12];
-			 transMats[13] = transMat[13]-0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 6
-			 
-			 
-			 transMats[12] = transMat[12];
-			 transMats[13] = transMat[13]+0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 
-			 //Cube 7
-			 
-			 transMats[12] = transMat[12]-0.5;
-			 transMats[13] = transMat[13]-0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 8
-			 
-			 transMats[12] = transMat[12]-0.5;
-			 transMats[13] = transMat[13];
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
-			 
-			 //Cube 9
-			 
-			 transMats[12] = transMat[12]-0.5;
-			 transMats[13] = transMat[13]+0.5;
-			 var tMatf = gl.getUniformLocation(shaderProgram, "tM");
-			 gl.uniformMatrix4fv(tMatf, false, transMats);
-			 
-			 //Draw the triangle
-			 gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+			
+		
 		}
 	  
 	  
@@ -442,7 +379,7 @@
 				0.2,0.2,0.2,
 			 ];
 
-			 var colors = [0,0,0, 0,0,0, 0,0,0, 1,1,1, 0,0,0, 0,0,0, 0,0,0, 0,0,0];
+			 var colors = [1,0,0, 1,0,0, 1,0,0, 1,0,0, 0,0,1, 0,0,1, 0,1,0, 0,1,0];
 			 
 			 indices = [0,1,2, 2,3,0, 4,5,6, 6,7,4, 4,5,1, 1,0,4, 3,2,6, 6,7,3, 2,1,5, 5,6,2, 4,0,3, 3,7,4];
 			 
