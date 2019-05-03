@@ -1,0 +1,950 @@
+<!doctype html>
+<html>
+   <body>
+	
+	
+	
+	Translate Up/Down
+	Translate Left/Right
+	Translate Front/Back
+	<br>
+    <input type="range" id="transYSlider" min=-1 max=1 step=0.01 oninput=shiftY()> 
+   
+    <input type="range" id="transXSlider" min=-1 max=1 step=0.01 oninput=shiftX()> 
+    
+    <input type="range" id="transZSlider" min=-1 max=1 step=0.01 oninput=shiftZ()> 
+    <br>
+
+	Scale X
+	Scale Y
+	Scale Z
+	<br>
+	<input type="range" id="scaleXSlider" min=0 max=2 step=0.01 oninput=scaleX()>
+	
+	<input type="range" id="scaleYSlider" min=0 max=2 step=0.01 oninput=scaleY()>
+	
+	<input type="range" id="scaleZSlider" min=0 max=2 step=0.01 oninput=scaleZ()>
+	<br>
+	
+	Rotate X	
+	
+	Rotate Y	
+	
+	Rotate Z	
+	<br>
+	<input type="range" id="rotateXSlider" min=-4 max=4 step=1 oninput=rotateX()>
+	<input type="range" id="rotateYSlider" min=-4 max=4 step=1 oninput=rotateY()>
+	<input type="range" id="rotateZSlider" min=-4 max=4 step=1 oninput=rotateZ()>
+	<br>
+
+	Skew X	
+	<br>
+	<input type="range" id="skewSlider" min=-4 max=4 step=0.01 oninput=skew()>
+	<br>
+	
+	FOV	(-4 - 4)
+	<br>
+	<input type="range" id="fovSlider" min=-4 max=4 step=0.01 oninput=persp()>
+	<br>
+	
+	Aspect(1-2)	
+	<br>
+	<input type="range" id="aspectSlider" min=1 max=2 step=1 oninput=persp()>
+	<br>
+		
+	Perspective
+	<br>
+	<input type="checkbox" id="perspectiveCheck" onclick=persp()>
+	<br>
+	
+    <canvas width = "600" height = "600" id = "my_Canvas"></canvas>	
+	
+      <script>
+	  
+		//global variables
+		var tX;
+		var tY;
+		var tZ;
+		var sX;
+		var sY;
+		var sZ;
+		var thetaX;
+		var thetaY;
+		var thetaZ;
+		var thetaSk;
+		var fov = 1;
+		var aspect = 1;
+		var near;
+		var far;
+		var range;
+		
+		
+		var shaderProgram;
+		
+		var transMat;
+		var transMats;
+		var scaleMat;
+		var rotateXMat;
+		var rotateYMat;
+		var rotateZMat;
+		var skewMat;
+		var perspMat;
+		
+		//Unused because they refuse to work.
+		var lookatMat;
+		var resultMat;
+	
+		var indices;
+        var canvas = document.getElementById('my_Canvas');
+        gl = canvas.getContext('experimental-webgl');
+		
+		
+		
+		
+		function shiftX(){
+			var pos = document.getElementById("transXSlider").value;
+			//alert(pos);
+			tX = pos;
+			
+			//redraw screen with new tX value
+			render();
+		}
+		function shiftY(){
+			var pos = document.getElementById("transYSlider").value;
+			//alert(pos);
+			tY = pos;
+			
+			//redraw screen with new tY value
+			render();
+		}
+		function shiftZ(){
+			var pos = document.getElementById("transZSlider").value;
+			//alert(pos);
+			tZ = pos;
+			
+			//redraw screen with new tY value
+			render();
+		}
+		
+		function scaleX(){
+			var pos = document.getElementById("scaleXSlider").value;
+			sX = pos;
+			//alert(pos);
+
+			render();
+		}
+		function scaleY(){
+			var pos = document.getElementById("scaleYSlider").value;
+			sY = pos;
+			//alert(pos);
+
+			render();
+		}
+		function scaleZ(){
+			var pos = document.getElementById("scaleZSlider").value;
+			sZ = pos;
+			//alert(pos);
+
+			render();
+		}
+		
+		function rotateX(){
+			var pos = document.getElementById("rotateXSlider").value;
+			thetaX = pos;
+			
+			render();
+		}
+		function rotateY(){
+			var pos = document.getElementById("rotateYSlider").value;
+			thetaY = pos;
+			
+			render();
+		}
+		function rotateZ(){
+			var pos = document.getElementById("rotateZSlider").value;
+			thetaZ = pos;
+			
+			render();
+		}
+
+		function skew(){
+			var pos = document.getElementById("skewSlider").value;
+			thetaSk = pos;
+			
+			render();
+		}
+		
+		
+		
+		function persp(){
+			var check = document.getElementById("perspectiveCheck");
+			
+			if (check.checked == true){
+			
+				fov = document.getElementById("fovSlider").value;
+				aspect = document.getElementById("aspectSlider").value;
+				
+				//alert(fov);
+				//fov = fov + 1;
+				
+				//Perspective Matrix
+				near = 0.5;
+				far = 100;
+				range = Math.tan(fov*0.5)*near;
+				perspMat[0] = (2*near)/(range*aspect + range*aspect);
+				perspMat[5] = near/range;
+				perspMat[10] = -(far + near)/(far - near);
+				perspMat[14] = -(2*far*near)/(far - near);
+				perspMat[11] = -1.0;
+				
+				
+				 
+				 
+				 render();
+			 }
+			 
+			else{
+				for(var i = 0; i < 16; i++){
+					perspMat[i] = 0.0;
+				}
+				for(var i = 0; i < 16; i+=5){
+					perspMat[i] = 1.0;
+				}
+				render();
+			 }
+			 
+			 
+
+			//render();
+
+		}
+
+		
+		function matrixMult(MA, MB){		
+			//From what I understand, this does matrix multiplication properly. It takes two perameter matrixes, selects specific values from each one, then 
+			//puts the result in an equasion to find each of the 16 values for the new matrix. However, when my Matrixes are multiplied together through this
+			//method, my resulting "Cube" is almost panel-like and refuses to work properly. 
+			
+			
+			//First Row
+			resultMat[0] =  (MA[0]*MB[0])+(MA[4]*MB[1])+(MA[8]*MB[2])+(MA[12]*MB[3]);
+			resultMat[4] =  (MA[0]*MB[4])+(MA[4]*MB[5])+(MA[8]*MB[6])+(MA[12]*MB[7]);
+			resultMat[8] =  (MA[0]*MB[8])+(MA[4]*MB[9])+(MA[8]*MB[10])+(MA[12]*MB[11]);
+			resultMat[12] =  (MA[0]*MB[12])+(MA[4]*MB[13])+(MA[8]*MB[14])+(MA[12]*MB[15]);
+			//Second Row
+			resultMat[1] =  (MA[1]*MB[0])+(MA[5]*MB[1])+(MA[9]*MB[2])+(MA[13]*MB[3]);
+			resultMat[5] =  (MA[1]*MB[4])+(MA[5]*MB[5])+(MA[9]*MB[6])+(MA[13]*MB[7]);
+			resultMat[9] =  (MA[1]*MB[8])+(MA[5]*MB[9])+(MA[9]*MB[10])+(MA[13]*MB[11]);
+			resultMat[13] =  (MA[1]*MB[12])+(MA[5]*MB[13])+(MA[9]*MB[14])+(MA[13]*MB[15]);
+			//Third Row
+			resultMat[2] =  (MA[2]*MB[0])+(MA[6]*MB[1])+(MA[10]*MB[2])+(MA[14]*MB[3]);
+			resultMat[6] =  (MA[2]*MB[4])+(MA[6]*MB[5])+(MA[10]*MB[6])+(MA[14]*MB[7]);
+			resultMat[10] =  (MA[2]*MB[8])+(MA[6]*MB[9])+(MA[10]*MB[10])+(MA[14]*MB[11]);
+			resultMat[14] =  (MA[2]*MB[12])+(MA[6]*MB[13])+(MA[10]*MB[14])+(MA[14]*MB[15]);
+			//Fourth Row
+			resultMat[3] =  (MA[3]*MB[0])+(MA[7]*MB[1])+(MA[11]*MB[2])+(MA[15]*MB[3]);
+			resultMat[7] =  (MA[3]*MB[4])+(MA[7]*MB[5])+(MA[11]*MB[6])+(MA[15]*MB[7]);
+			resultMat[11] =  (MA[3]*MB[8])+(MA[7]*MB[9])+(MA[11]*MB[10])+(MA[15]*MB[11]);
+			resultMat[15] =  (MA[3]*MB[12])+(MA[7]*MB[13])+(MA[11]*MB[14])+(MA[15]*MB[15]);
+			
+			return resultMat;
+		}
+		
+		function renderA1(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB1(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC1(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA2(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB2(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC2(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA3(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB3(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC3(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA4(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB4(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC4(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA5(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB5(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC5(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA6(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB6(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC6(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] + 0.0;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA7(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB7(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC7(){
+			
+			transMats[12] = transMat[12] - 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA8(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB8(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC8(){
+			
+			transMats[12] = transMat[12] - 0.0;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderA9(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderB9(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] + 0.0;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		function renderC9(){
+			
+			transMats[12] = transMat[12] + 0.5;
+			transMats[13] = transMat[13] - 0.5;
+			transMats[14] = transMat[14] - 0.5;
+			
+			var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+			gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+			//Draw the triangle
+			gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+		}
+		
+		function render(){
+			  /*============Drawing the Quad====================*/
+
+			 // Clear the canvas
+			 gl.clearColor(0.5, 0.5, 0.5, 0.9);
+
+			 // Enable the depth test
+			 gl.enable(gl.DEPTH_TEST);
+
+			 // Clear the color buffer bit
+			 gl.clear(gl.COLOR_BUFFER_BIT);
+
+			 // Set the view port
+			 gl.viewport(0,0,canvas.width,canvas.height);
+
+			//TransMat 
+			 transMat[12] = tX;
+			 transMat[13] = tY;
+			 transMat[14] = tZ;
+			 var tMat = gl.getUniformLocation(shaderProgram, "tM");
+			 gl.uniformMatrix4fv(tMat, false, transMat);
+
+			 //ScaleMat
+			 scaleMat[0] = sX;
+			 scaleMat[5] = sY;
+			 scaleMat[10] = sZ;
+			 var sMat = gl.getUniformLocation(shaderProgram, "sM");
+			 gl.uniformMatrix4fv(sMat, false, scaleMat);
+			 
+			 //RotateMatX
+			 rotateXMat[5] = Math.cos(thetaX);
+			 rotateXMat[6] = Math.sin(thetaX);
+			 rotateXMat[9] = -Math.sin(thetaX);
+			 rotateXMat[10] = Math.cos(thetaX);
+			 var rXMat = gl.getUniformLocation(shaderProgram, "rXM");
+			 gl.uniformMatrix4fv(rXMat, false, rotateXMat);
+			 
+			 //RotateMatY
+			 rotateYMat[0] = Math.cos(thetaY);
+			 rotateYMat[2] = -Math.sin(thetaY);
+			 rotateYMat[8] = Math.sin(thetaY);
+			 rotateYMat[10] = Math.cos(thetaY);
+			 var rYMat = gl.getUniformLocation(shaderProgram, "rYM");
+			 gl.uniformMatrix4fv(rYMat, false, rotateYMat);
+			 
+			 //RotateMatZ
+			 rotateZMat[0] = Math.cos(thetaZ);
+			 rotateZMat[1] = Math.sin(thetaZ);
+			 rotateZMat[4] = -Math.sin(thetaZ);
+			 rotateZMat[5] = Math.cos(thetaZ);
+			 var rZMat = gl.getUniformLocation(shaderProgram, "rZM");
+			 gl.uniformMatrix4fv(rZMat, false, rotateZMat);
+			 
+			 //SkewMat
+			 skewMat[4] = 1/Math.tan(thetaSk);
+			 var skewM = gl.getUniformLocation(shaderProgram, "skM");
+			 gl.uniformMatrix4fv(skewM, false, skewMat);
+			 
+			 //Perspec Mat
+			 var perspM = gl.getUniformLocation(shaderProgram, "pM");
+			 gl.uniformMatrix4fv(perspM, false, perspMat);
+			 
+			 
+			 
+			 //My attempts to multiply Matrixes together: 
+			 
+			 //alert(transMat);
+			 
+			 //matrixMult(transMat,skewMat);
+			 //matrixMult(resultMat,rotateXMat);
+			 //matrixMult(resultMat,rotateYMat);
+			 //matrixMult(resultMat,rotateZMat);
+			 //matrixMult(resultMat,scaleMat);
+			 //alert(resultMat);
+			 
+			 //var tMat = gl.getUniformLocation(shaderProgram, "tM");
+			 //gl.uniformMatrix4fv(tMat, false, resultMat);
+			 
+			 
+			 
+			 var lMat = gl.getUniformLocation(shaderProgram, "lM");
+			 gl.uniformMatrix4fv(lMat, false, lookatMat);
+			 
+			 
+			 
+			 //var mMat = gl.getUniformLocation(shaderProgram, "mM");
+			 //gl.uniformMatric4fv(mMat, false, model);
+			 
+			 //Draw the triangle
+			 //gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+			 
+			 for (var i = 0; i < 16; i++){
+				transMats[i] = transMat[i];
+				}
+				
+			renderA1();
+			renderA2();
+			renderA3();
+			renderA4();
+			renderA5();
+			renderA6();
+			renderA7();
+			renderA8();
+			renderA9();
+			renderB1();
+			renderB2();
+			renderB3();
+			renderB4();
+			renderB5();
+			renderB6();
+			renderB7();
+			renderB8();
+			renderB9();
+			renderC1();
+			renderC2();
+			renderC3();
+			renderC4();
+			renderC5();
+			renderC6();
+			renderC7();
+			renderC8();
+			renderC9();
+			//for(i = 0; i < 3; i++){
+				//for(j = 0; j < 3; j++){
+					//for(l = 0; l < 3; l++){
+					//transMats[12] = (transMat[12]-0.4)+ i*0.4;
+					//transMats[13] = (transMat[13]-0.4)+ j*0.4;
+					//transMats[14] = (transMat[14]-0.8)+ l*0.4;
+					//var tMatf = gl.getUniformLocation(shaderProgram, "tM");
+					//gl.uniformMatrix4fv(tMatf, false, transMats);
+			 
+					//Draw the triangle
+					//gl.drawElements(gl.TRIANGLES, indices.length, gl.UNSIGNED_SHORT,0);
+					//}
+				//}
+			//}
+					
+			
+			
+		
+		}
+	  
+	  
+        
+         
+         /*========== Defining and storing the geometry ==========*/
+
+		 function init(){
+			 var vertices = [
+				-0.2,0.2,-0.2, 
+				-0.2,-0.2,-0.2,
+				0.2,-0.2,-0.2,
+				0.2,0.2,-0.2,
+				-0.2,0.2,0.2, 
+				-0.2,-0.2,0.2,
+				0.2,-0.2,0.2,
+				0.2,0.2,0.2,
+			 ];
+
+			 var colors = [1,0,0, 1,0,0, 1,0,0, 1,0,0, 0,0,1, 0,0,1, 0,1,0, 0,1,0];
+			 
+			 indices = [0,1,2, 2,3,0, 4,5,6, 6,7,4, 4,5,1, 1,0,4, 3,2,6, 6,7,3, 2,1,5, 5,6,2, 4,0,3, 3,7,4];
+			 
+			 
+			 //Initiate Arrays: 
+			 transMat = new Float32Array(16);
+			 transMats = new Float32Array(16);
+			 scaleMat = new Float32Array(16);
+			 rotateXMat = new Float32Array(16);
+			 rotateYMat = new Float32Array(16);
+			 rotateZMat = new Float32Array(16);
+			 skewMat = new Float32Array(16);
+			 perspMat = new Float32Array(16);
+			 
+			 //Useless Arrays: 
+			 resultMat = new Float32Array(16);
+			 lookatMat = new Float32Array(16);
+			 
+			 //Prime Perspec variables. 
+			 
+			 document.getElementById("fovSlider").value = 1.0;
+			 document.getElementById("aspectSlider").value = 1.0;
+			 
+			 aspect = 1.0;
+			 fov = 1.0;
+			 
+			 //Fill Matrixes
+			 for (var i = 0; i < 16; i++){
+				transMat[i] = 0.0;
+				scaleMat[i] = 0.0;
+				rotateXMat[i] = 0.0;
+				rotateYMat[i] = 0.0;
+				rotateZMat[i] = 0.0;
+				skewMat[i] = 0.0;
+				perspMat[i] = 0.0;
+				resultMat[i] = 0.0;
+				lookatMat[i] = 0.0;
+
+			 }			 
+			 for (var i = 0; i < 16; i += 5){
+				transMat[i] = 1.0;
+				rotateXMat[i] = 1.0;
+				rotateYMat[i] = 1.0;
+				rotateZMat[i] = 1.0;
+				skewMat[i] = 1.0;
+				perspMat[i] = 1.0;
+				lookatMat[i] = 1.0;
+			 }	
+
+			 //translation matrix		 
+			 tX = 0.0;
+			 tY = 0.0;
+			 tZ = 0.0;
+			 transMat[12] = tX;
+			 transMat[13] = tY;
+			 transMat[14] = tZ;
+			 
+			 //scaling matrix
+			 sX = 0.5;
+			 sY = 0.5;
+			 sZ = 0.5;
+			 scaleMat[0] = sX;
+			 scaleMat[5] = sY;
+			 scaleMat[10] = sZ;
+			 scaleMat[15] = 1.0;
+			 
+			 //rotation matrices
+			 //X matrix
+			 thetaX = 0.0;
+			 rotateXMat[5] = Math.cos(thetaX);
+			 rotateXMat[6] = Math.sin(thetaX);
+			 rotateXMat[9] = -Math.sin(thetaX);
+			 rotateXMat[10] = Math.cos(thetaX);
+			 
+			 //Y Matrix
+			 thetaY = 0.0;
+			 rotateYMat[0] = Math.cos(thetaY);
+			 rotateYMat[2] = -Math.sin(thetaY);
+			 rotateYMat[8] = Math.sin(thetaY);
+			 rotateYMat[10] = Math.cos(thetaY);
+			 
+			 //Z Matrix			 
+			 thetaZ = 0.0;
+			 rotateZMat[0] = Math.cos(thetaZ);
+			 rotateZMat[1] = Math.sin(thetaZ);
+			 rotateZMat[4] = -Math.sin(thetaZ);
+			 rotateZMat[5] = Math.cos(thetaZ);
+			 
+			 //Skew Matrix
+			 thetaSk = 1.5707;
+			 skewMat[4] = 1/Math.tan(thetaSk);
+				
+			 //Look At Matrix
+			 lookatMat[10] = -1;
+			 //From what I understand, the LAMatrix is meant to only be used when the CAMERA wants to move, but to my knowlege, the camera never needs to
+			 //Leave the origin or look a diffrent dirrection. So it's just the identity matrix with the item [10] being changed to -1. 
+			
+			 
+
+			
+			 // Create an empty buffer object and store vertex data
+			 var vertex_buffer = gl.createBuffer();
+			 gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+			 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(vertices), gl.STATIC_DRAW);
+			 gl.bindBuffer(gl.ARRAY_BUFFER, null);
+
+			 // Create an empty buffer object and store Index data
+			 var Index_Buffer = gl.createBuffer();
+			 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+			 gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(indices), gl.STATIC_DRAW);
+			 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
+
+			 // Create an empty buffer object and store color data
+			 var color_buffer = gl.createBuffer ();
+			 gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			 gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+
+			 /*======================= Shaders =======================*/
+			 
+			 // vertex shader source code
+			 var vertCode = 'attribute vec3 coordinates;'+
+				'attribute vec3 color;'+
+				'varying vec3 vColor;'+
+				'uniform mat4 tM, lM, pM, rXM,rYM,rZM,sM,skM;'+
+				'void main(void) {' +
+				   ' gl_Position = rXM*rYM*rZM*sM*skM*pM*tM*vec4(coordinates, 1.0);' +
+				   'vColor = color;'+
+				   'gl_PointSize = 10.0;' +
+				'}';
+				
+			 // Create a vertex shader object
+			 var vertShader = gl.createShader(gl.VERTEX_SHADER);
+
+			 // Attach vertex shader source code
+			 gl.shaderSource(vertShader, vertCode);
+
+			 // Compile the vertex shader
+			 gl.compileShader(vertShader);
+
+
+			 // fragment shader source code
+			 var fragCode = 'precision mediump float;'+
+				'varying vec3 vColor;'+
+				'void main(void) {'+
+				   'gl_FragColor = vec4(vColor, 1.);'+
+				'}';
+				
+			 // Create fragment shader object
+			 var fragShader = gl.createShader(gl.FRAGMENT_SHADER);
+
+			 // Attach fragment shader source code
+			 gl.shaderSource(fragShader, fragCode);
+
+			 // Compile the fragmentt shader
+			 gl.compileShader(fragShader);
+
+			 // Create a shader program object to
+			 // store the combined shader program
+			 shaderProgram = gl.createProgram();
+
+			 // Attach a vertex shader
+			 gl.attachShader(shaderProgram, vertShader);
+
+			 // Attach a fragment shader
+			 gl.attachShader(shaderProgram, fragShader);
+
+			 // Link both the programs
+			 gl.linkProgram(shaderProgram);
+
+			 // Use the combined shader program object
+			 gl.useProgram(shaderProgram);
+
+			 /* ======== Associating shaders to buffer objects =======*/
+
+			 // Bind vertex buffer object
+			 gl.bindBuffer(gl.ARRAY_BUFFER, vertex_buffer);
+
+			 // Bind index buffer object
+			 gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
+
+			 // Get the attribute location
+			 var coord = gl.getAttribLocation(shaderProgram, "coordinates");
+
+			 // point an attribute to the currently bound VBO
+			 gl.vertexAttribPointer(coord, 3, gl.FLOAT, false, 0, 0);
+
+			 // Enable the attribute
+			 gl.enableVertexAttribArray(coord);
+
+			 // bind the color buffer
+			 gl.bindBuffer(gl.ARRAY_BUFFER, color_buffer);
+			 
+			 // get the attribute location
+			 var color = gl.getAttribLocation(shaderProgram, "color");
+	 
+			 // point attribute to the volor buffer object
+			 gl.vertexAttribPointer(color, 3, gl.FLOAT, false,0,0) ;
+	 
+			 // enable the color attribute
+			 gl.enableVertexAttribArray(color);
+			 
+			 render();
+			 
+		} //end init()
+
+       
+		init();
+		
+      </script>
+	  
+	  
+   </body>
+</html>

@@ -1,0 +1,57 @@
+<html>
+<style type = "text/css">
+	canvas { background: green; }
+</style>
+
+<! Vertex shader >
+<script id = "vertex-shader" type = "x-shader/x-vertex">
+///////////////// Necessary Changes ///////////////////
+attribute vec3 vPos;
+uniform mat4 rM;
+attribute vec2 aTextureCoord;
+varying highp vec2 vTextureCoord;
+varying vec3 v_normal;
+
+void main(void){
+    gl_Position = rM*vec4(vPos, 1.0);
+    vTextureCoord = aTextureCoord;
+    v_normal = normalize(vPos);
+}
+</script>
+
+
+
+<script id = "fragment-shader" type = "x-shader/x-fragment">
+precision mediump float;
+varying highp vec2 vTextureCoord;
+uniform samplerCube uSampler;
+varying vec3 v_normal;
+
+void main(void) {
+	gl_FragColor = textureCube(uSampler, normalize(v_normal));
+}
+/////////////////////////////////////////////////////////
+</script>
+
+
+<script type = "text/javascript"
+src = "https://www.khronos.org/registry/webgl/sdk/demos/common/webgl-utils.js">
+</script>
+<script type = "text/javascript" src = "loadShaders.js"></script>
+<script type = "text/javascript" src = "demo.js"></script>
+
+
+
+<body>
+<br>
+<br>
+Rotate up/down
+<br>
+<input type="range" id="rotSlider" min=0 max=360 step=1.0 oninput=rotY()>
+<br>
+<br>
+<canvas id = "gl-canvas" width = "512" height = "512">
+	Browser does not support HTML5 interactive - interactive cannot run.
+</canvas>
+</body>
+</html>

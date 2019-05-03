@@ -1,0 +1,129 @@
+<html>
+<style type = "text/css">
+	canvas { background: green; }
+</style>
+
+<! Vertex shader >
+<script id = "vertex-shader" type = "x-shader/x-vertex">
+attribute vec3 vPos;
+attribute vec3 norm;
+uniform mat4 tM;
+varying vec3 vertNorm;
+varying vec4 fragPos;
+
+
+
+void main(){
+    gl_Position = tM*vec4(vPos, 1.0);
+	vertNorm = vec3(norm[0], norm[1], norm[2]);
+	fragPos = gl_Position; 
+	
+}
+</script>
+
+
+
+
+<script id = "fragment-shader" type = "x-shader/x-fragment">
+#ifdef GL_ES
+precision highp float;
+#endif
+
+varying vec3 vertNorm;
+varying vec4 fragPos;
+
+// fixed point light properties
+vec3 position_eye = vec3 (0.0, 0.0, 1.0);
+vec3 light_position_world  = vec3 (0.0, 1.0, 0.0);
+vec4 light_position_world2 = vec4 ( light_position_world[0], light_position_world[1], light_position_world[2], 1);
+vec3 light_direction = vec3 (0.0, -1.0, 0.0);
+
+
+precision mediump float;
+
+
+void main(){
+    vec3 fragPos2 =  vec3(fragPos[0], fragPos[1], fragPos[2]);
+    vec3 distance_bw_frag_light = fragPos2 - light_position_world;
+    vec3 direction_to_light_frag = normalize(distance_bw_frag_light);
+    float light_frag = dot (light_direction, direction_to_light_frag);
+    float distance = (distance_bw_frag_light[0]*distance_bw_frag_light[0])+(distance_bw_frag_light[1]*distance_bw_frag_light[1])+(distance_bw_frag_light[2]*distance_bw_frag_light[2]);
+
+float temp = dot (light_position_world, vertNorm);
+
+
+if(temp == 0.0){
+	gl_FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+}
+
+
+
+
+
+
+
+}
+</script>
+
+
+<script type = "text/javascript"
+src = "https://www.khronos.org/registry/webgl/sdk/demos/common/webgl-utils.js">
+</script>
+<script type = "text/javascript" src = "loadShaders.js"></script>
+<script type = "text/javascript" src = "demo_fillIn.js"></script>
+
+
+<body>
+<div style="float:left; width:602px; clear:right">
+<div style="float:left; width:200px; clear:right"> <br> <br>
+<br>
+<br>
+Translate left/right
+<br>
+<input type="range" id="transXSlider" min=-1 max=1 step=0.01 oninput=shiftX()> <br> <br>
+Translate up/down <br>
+<input type="range" id="transYSlider" min=-1 max=1 step=0.01 oninput=shiftY()> <br> <br>
+Translate in/out <br>
+<input type="range" id="transZSlider" min=-1 max=1 step=0.01 oninput=shiftZ()> <br> <br>
+
+<br>
+<br>
+Rotate along xA axis<br>
+<input type="range" id="rotXASlider" min=0 max=360 step=.90 oninput=rotateXA()> <br> <br>
+Rotate along yA axis <br>
+<input type="range" id="rotYASlider" min=0 max=364 step=0.1 oninput=rotateYA()> <br> <br>
+Rotate along zA axis <br>
+<input type="range" id="rotZASlider" min=0 max=364 step=0.1 oninput=rotateZA()> <br> <br>
+</div>
+
+<div style="float:left; width:200px; clear:right"> 
+<br> <br> <br> <br><br> <br><br> <br><br> <br><br> <br><br><br><br>
+
+Rotate along xB axis<br>
+<input type="range" id="rotXBSlider" min=0 max=360 step=.90 oninput=rotateXB()> <br> <br>
+Rotate along yB axis <br>
+<input type="range" id="rotYBSlider" min=0 max=364 step=0.1 oninput=rotateYB()> <br> <br>
+Rotate along zB axis <br>
+<input type="range" id="rotZBSlider" min=0 max=364 step=0.1 oninput=rotateZB()> <br> <br>
+</div>
+
+
+<div style="float:left; width:200px; clear:right"> 
+<br> <br> <br> <br><br> <br><br> <br><br> <br><br> <br><br><br><br>
+Rotate along xC axis<br>
+<input type="range" id="rotXCSlider" min=0 max=360 step=.90 oninput=rotateXC()> <br> <br>
+Rotate along yC axis <br>
+<input type="range" id="rotYCSlider" min=0 max=364 step=0.1 oninput=rotateYC()> <br> <br>
+Rotate along zC axis <br>
+<input type="range" id="rotZCSlider" min=0 max=364 step=0.1 oninput=rotateZC()> <br> <br>
+</div>
+</div>
+<br>
+<br>
+<div style="float:left;">
+<canvas id = "gl-canvas" width = "512" height = "512">
+	Browser does not support HTML5 interactive - interactive cannot run.
+</canvas>
+</div>
+</body>
+</html>
