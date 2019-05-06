@@ -11,11 +11,22 @@ var tY =0.0;
 var tZ =0.0;
 var c;
 
+var rotXMat;
 var rotXAMat;
-var rotYAMat;
-var rotZAMat;
-var temp = new Float32Array(16);
+var rotXBMat;
+var rotXBMat;
 
+var rotYMat;
+var rotYAMat;
+var rotYBMat;
+var rotYCMat;
+
+var rotZAMat;
+var rotZBMat;
+var rotZCMat;
+
+var temp = new Float32Array(16);
+ 
 
  
 function render(){
@@ -25,201 +36,488 @@ function render(){
     transMat[13] = tY;
     transMat[14] = tZ;
     
+
     for (var i = 0; i < 16; i ++){
         temp[i]= transMat[i];
+        
     }
 // MIDDLE SLICE
-    //Middle Row
-    multMat(temp,rotXAMat);
-    multMat(c,rotYAMat);
+    // MIDDLE SLICE
+    //Upper Middle Row
+    
+    multMat(temp,rotYAMat);
+    multMat(rotZBMat,c);
+    multMat(rotXAMat,c);
+    c[13] = parseFloat(tY) + 0.5;
+    c[12] = parseFloat(tX)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
     for (var i = 0; i < 16; i ++){
         transMat[i] = c[i];
     }
-    
-    
-    
-    
     var tMat = gl.getUniformLocation(gl.program, "tM");
     gl.uniformMatrix4fv(tMat, false, transMat);
     gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-
+   
+    
     
     multMat(temp,rotYAMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXBMat);
+   c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY) + 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+    
     for (var i = 0; i < 16; i ++){
         transMat[i] = c[i];
     }
-    
-    transMat[12] = transMat[12]+ 0.5;
-    tMat = gl.getUniformLocation(gl.program, "tM");
-    gl.uniformMatrix4fv(tMat, false, transMat);
-    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-    
-    transMat[12]= temp[12];
-
-    transMat[12] = transMat[12]- 0.5;
     tMat = gl.getUniformLocation(gl.program, "tM");
     gl.uniformMatrix4fv(tMat, false, transMat);
     gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
     
     
-
-    //Upper Middle Row
     
-    multMat(temp,rotXAMat);
+    multMat(temp,rotYAMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXCMat);
+    c[13] = parseFloat(tY) + 0.5;
+    c[12] = parseFloat(tX)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
     for (var i = 0; i < 16; i ++){
         transMat[i] = c[i];
     }
-    transMat[12] = parseFloat(tX);
-    transMat[13] = parseFloat(tY) + 0.5;
     tMat = gl.getUniformLocation(gl.program, "tM");
     gl.uniformMatrix4fv(tMat, false, transMat);
     gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
+    
+    //Middle Row
+    multMat(temp,rotYBMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
+    for (var i = 0; i < 16; i ++){
+        transMat[i] = c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
+    multMat(temp,rotYBMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXBMat);
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
+    for (var i = 0; i < 16; i ++){
+        transMat[i] = c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
+    multMat(temp,rotYBMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXCMat);
+    c[12]= temp[12];
+    c[12] = transMat[12]+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
     
     for (var i = 0; i < 16; i ++){
-        transMat[i]= temp[i];
+        transMat[i] = c[i];
     }
-    transMat[12] = parseFloat(tX);
-    transMat[13] = parseFloat(tY) + 0.5;
-    
-    transMat[12] = parseFloat(tX)+ 0.5;
     tMat = gl.getUniformLocation(gl.program, "tM");
     gl.uniformMatrix4fv(tMat, false, transMat);
     gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
     
-    transMat[12] = parseFloat(tX)- 0.5;
-    tMat = gl.getUniformLocation(gl.program, "tM");
-    gl.uniformMatrix4fv(tMat, false, transMat);
-    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
     //Lower Midddle Row
     
-    multMat(temp,rotXAMat);
+    multMat(temp,rotYCMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13]= parseFloat(tY)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
     for (var i = 0; i < 16; i ++){
         transMat[i] = c[i];
     }
-    transMat[12] = parseFloat(tX);
-    transMat[13]= parseFloat(tY)- 0.5;
-    tMat = gl.getUniformLocation(gl.program, "tM");
-    gl.uniformMatrix4fv(tMat, false, transMat);
-    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-    for (var i = 0; i < 16; i ++){
-        transMat[i]= temp[i];
-    }
-    transMat[12] = parseFloat(tX);
-    transMat[13]= parseFloat(tY)- 0.5;
-    
-    transMat[12] = parseFloat(tX)+ 0.5;
-    tMat = gl.getUniformLocation(gl.program, "tM");
-    gl.uniformMatrix4fv(tMat, false, transMat);
-    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-    
-    transMat[12] = parseFloat(tX)- 0.5;
     tMat = gl.getUniformLocation(gl.program, "tM");
     gl.uniformMatrix4fv(tMat, false, transMat);
     gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
     transMat[13]= 0.0;
+    
+    
+    
+    
+    multMat(temp,rotYCMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13]= parseFloat(tY)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
+    for (var i = 0; i < 16; i ++){
+        transMat[i] = c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
+    multMat(temp,rotYCMat);
+    multMat(c,rotZBMat);
+    multMat(c,rotXCMat);
+    c[13]= parseFloat(tY)- 0.5;
+    c[12] = parseFloat(tX)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+
+
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= temp[i];
+    }
+
+    
  // FORWARD SLICE
-//    //Middle Row
-//    transMat[14] = 1.0;
-//    transMat[12] = tX;
-//    var tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+//    //Upper Row
+    
+    multMat(temp,rotYAMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+
+    
+    
+    multMat(temp,rotYAMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+
+    
+    
+    multMat(temp,rotYAMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
 //    //Upper Middle Row
-//    transMat[12] = parseFloat(tX);
-//    transMat[13] = 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    multMat(temp,rotYBMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    multMat(temp,rotYBMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//    //Lower Midddle Row
-//    transMat[13]= -1.0;
+    multMat(temp,rotYBMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX);
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    multMat(temp,rotYCMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    multMat(temp,rotYCMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//    transMat[13]= 0.0;
+    multMat(temp,rotYCMat);
+    multMat(c,rotZCMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)+ 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
 ////BACK SLICE
 //    //Middle Row
-//    transMat[14]= -1.0;
-//    transMat[12] = tX;
-//    var tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    multMat(temp,rotYAMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
 //
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//    //Upper Middle Row
-//    transMat[12] = parseFloat(tX);
-//    transMat[13] = 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//    //Lower Midddle Row
-//    transMat[13]= -1.0;
-//
-//    transMat[12] = parseFloat(tX);
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)+ 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//
-//    transMat[12] = parseFloat(tX)- 1.0;
-//    tMat = gl.getUniformLocation(gl.program, "tM");
-//    gl.uniformMatrix4fv(tMat, false, transMat);
-//    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
-//    transMat[13]= 0.0;
-//    transMat[14] = 0.0;
+    multMat(temp,rotYAMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    
+    multMat(temp,rotYAMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY)+ 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    //    //Upper Middle Row
+    multMat(temp,rotYBMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    //
+    multMat(temp,rotYBMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    //
+    multMat(temp,rotYBMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY);
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    //
+    multMat(temp,rotYCMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXAMat);
+    c[12] = parseFloat(tX)- 0.5;
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    //
+    multMat(temp,rotYCMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXBMat);
+    c[12] = parseFloat(tX);
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    //
+    multMat(temp,rotYCMat);
+    multMat(c,rotZAMat);
+    multMat(c,rotXCMat);
+    c[12] = parseFloat(tX)+ 0.5;
+    c[13] = parseFloat(tY)- 0.5;
+    c[14] = parseFloat(tZ)- 0.5;
+    multMat(rotXMat,c);
+    multMat(rotYMat,c);
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= c[i];
+    }
+    tMat = gl.getUniformLocation(gl.program, "tM");
+    gl.uniformMatrix4fv(tMat, false, transMat);
+    gl.drawElements(gl.TRIANGLES, numVerts, gl.UNSIGNED_SHORT,0);
+    
+    
+    for (var i = 0; i < 16; i ++){
+        transMat[i]= temp[i];
+    }
 }
 
  
@@ -239,7 +537,34 @@ function shiftZ(){
     tZ = pos;
     render();
 }
-
+function rotateX(){
+    var pos = document.getElementById("rotXSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotXMat[i] = 0;
+    }
+    rotXMat[0] = 1;
+    rotXMat[15] = 1;
+    rotXMat[5] = Math.cos(pos);
+    rotXMat[10] = Math.cos(pos);
+    rotXMat[6] = Math.sin(pos);
+    rotXMat[9] = -(Math.sin(pos));
+    render();
+}
+function rotateY(){
+    var pos = document.getElementById("rotYSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotYMat[i] = 0;
+    }
+    rotYMat[0] = Math.cos(pos);//
+    rotYMat[15] = 1;//
+    rotYMat[5] = 1;//
+    rotYMat[10] = Math.cos(pos);//
+    rotYMat[8] = Math.sin(pos);//
+    rotYMat[2] = -(Math.sin(pos));//
+    render();
+}
 function multMat(a, b){
     var mata0 = a[0],   mata4 = a[4],   mata8 = a[8],   mata12 = a[12];
     var mata1 = a[1],   mata5 = a[5],   mata9 = a[9],   mata13 = a[13];
@@ -290,6 +615,35 @@ function rotateXA(){
     rotXAMat[9] = -(Math.sin(pos));
     render();
 }
+function rotateXB(){
+    var pos = document.getElementById("rotXBSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotXBMat[i] = 0;
+    }
+    rotXBMat[0] = 1;
+    rotXBMat[15] = 1;
+    rotXBMat[5] = Math.cos(pos);
+    rotXBMat[10] = Math.cos(pos);
+    rotXBMat[6] = Math.sin(pos);
+    rotXBMat[9] = -(Math.sin(pos));
+    render();
+}
+function rotateXC(){
+    var pos = document.getElementById("rotXCSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotXCMat[i] = 0;
+    }
+    rotXCMat[0] = 1;
+    rotXCMat[15] = 1;
+    rotXCMat[5] = Math.cos(pos);
+    rotXCMat[10] = Math.cos(pos);
+    rotXCMat[6] = Math.sin(pos);
+    rotXCMat[9] = -(Math.sin(pos));
+    render();
+}
+
 function rotateYA(){
     var pos = document.getElementById("rotYASlider").value;
     pos = (pos * 3.14159)/180;
@@ -304,19 +658,75 @@ function rotateYA(){
     rotYAMat[2] = -(Math.sin(pos));//
     render();
 }
+function rotateYB(){
+    var pos = document.getElementById("rotYBSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotYBMat[i] = 0;
+    }
+    rotYBMat[0] = Math.cos(pos);//
+    rotYBMat[15] = 1;//
+    rotYBMat[5] = 1;//
+    rotYBMat[10] = Math.cos(pos);//
+    rotYBMat[8] = Math.sin(pos);//
+    rotYBMat[2] = -(Math.sin(pos));//
+    render();
+}
+function rotateYC(){
+    var pos = document.getElementById("rotYCSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotYCMat[i] = 0;
+    }
+    rotYCMat[0] = Math.cos(pos);//
+    rotYCMat[15] = 1;//
+    rotYCMat[5] = 1;//
+    rotYCMat[10] = Math.cos(pos);//
+    rotYCMat[8] = Math.sin(pos);//
+    rotYCMat[2] = -(Math.sin(pos));//
+    render();
+}
 
 function rotateZA(){
-    var pos = document.getElementById("rotZSlider").value;
+    var pos = document.getElementById("rotZASlider").value;
     pos = (pos * 3.14159)/180;
     for (var i = 0; i < 16; i ++){
         rotZAMat[i] = 0;
     }
     rotZAMat[0] = Math.cos(pos);//
     rotZAMat[15] = 1;//
-    rotZAMat[5] = Math.cos(pos);;//
+    rotZAMat[5] = Math.cos(pos);//
     rotZAMat[10] = 1;//
     rotZAMat[1] = Math.sin(pos);
     rotZAMat[4] = -(Math.sin(pos));
+    render();
+}
+function rotateZB(){
+    var pos = document.getElementById("rotZBSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotZBMat[i] = 0;
+    }
+    rotZBMat[0] = Math.cos(pos);//
+    rotZBMat[15] = 1;//
+    rotZBMat[5] = Math.cos(pos);//
+    rotZBMat[10] = 1;//
+    rotZBMat[1] = Math.sin(pos);
+    rotZBMat[4] = -(Math.sin(pos));
+    render();
+}
+function rotateZC(){
+    var pos = document.getElementById("rotZCSlider").value;
+    pos = (pos * 3.14159)/180;
+    for (var i = 0; i < 16; i ++){
+        rotZCMat[i] = 0;
+    }
+    rotZCMat[0] = Math.cos(pos);//
+    rotZCMat[15] = 1;//
+    rotZCMat[5] = Math.cos(pos);//
+    rotZCMat[10] = 1;//
+    rotZCMat[1] = Math.sin(pos);
+    rotZCMat[4] = -(Math.sin(pos));
     render();
 }
 
@@ -324,61 +734,88 @@ function init(){
 	canvas = document.getElementById("gl-canvas"); 
 	
 	document.getElementById("transXSlider").value = "0";
+    document.getElementById("transYSlider").value = "0";
+
+    
+    document.getElementById("rotXSlider").value = "0";
+    document.getElementById("rotYSlider").value = "0";
+
+    
+    document.getElementById("rotXASlider").value = "0";
+    document.getElementById("rotYASlider").value = "0";
+    document.getElementById("rotZASlider").value = "0";
+    
+    document.getElementById("rotXBSlider").value = "0";
+    document.getElementById("rotYBSlider").value = "0";
+    document.getElementById("rotZBSlider").value = "0";
+    
+    document.getElementById("rotXCSlider").value = "0";
+    document.getElementById("rotYCSlider").value = "0";
+    document.getElementById("rotZCSlider").value = "0";
 
 	gl = WebGLUtils.setupWebGL(canvas);
 	if (!gl) { alert("WebGL isn't available - interactive cannot run"); }
 	gl.clearColor(0.0, 0.0, 0.0, 1.0);
 	gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.enable(gl.DEPTH_TEST);
 
 	//Load shaders and initalize attribute buffers
 	initShaders2(gl, "vertex-shader", "fragment-shader"); 
 
-	var textCoords = [
-        0.0,  1.0,
-        0.0,  0.0,
-        1.0,  0.0,
-        1.0,  1.0,
 
-        1.0,  0.0,
-        0.0,  1.0,
-        0.0,  1.0,
-        1.0,  0.0
-    ];
 
-	tX = 0.0;
-	transMat = new Float32Array(16);
-	for (var i = 0; i < 16; i++){
-		transMat[i] = 0;	
-	}
-	for (var i = 0; i < 16; i += 5)
-		transMat[i] = 1;
-	transMat[12] = tX; 
-	
+    tX = 0.0;
+    transMat = new Float32Array(16);
     
-    
+    rotXMat = new Float32Array(16);
     rotXAMat = new Float32Array(16);
-    for (var i = 0; i < 16; i++){
-        rotXAMat[i] = 0;
-    }
-    for (var i = 0; i < 16; i += 5){
-        rotXAMat[i] = 1;
-    }
+    rotXBMat = new Float32Array(16);
+    rotXCMat = new Float32Array(16);
     
+    rotYMat = new Float32Array(16);
     rotYAMat = new Float32Array(16);
-    for (var i = 0; i < 16; i++){
-        rotYAMat[i] = 0;
-    }
-    for (var i = 0; i < 16; i += 5){
-        rotYAMat[i] = 1;
-    }
+    rotYBMat = new Float32Array(16);
+    rotYCMat = new Float32Array(16);
     
     rotZAMat = new Float32Array(16);
+    rotZBMat = new Float32Array(16);
+    rotZCMat = new Float32Array(16);
     for (var i = 0; i < 16; i++){
+        transMat[i] = 0;
+        rotXMat[i] = 0;
+        rotXAMat[i] = 0;
+        rotXBMat[i] = 0;
+        rotXCMat[i] = 0;
+        
+        rotYMat[i] = 0;
+        rotYAMat[i] = 0;
+        rotYBMat[i] = 0;
+        rotYCMat[i] = 0;
+        
         rotZAMat[i] = 0;
+        rotZBMat[i] = 0;
+        rotZCMat[i] = 0;
+        
     }
     for (var i = 0; i < 16; i += 5){
+        transMat[i] = 1;
+        
+        rotXMat[i] = 1;
+        rotXAMat[i] = 1;
+        rotXBMat[i] = 1;
+        rotXCMat[i] = 1;
+        
+        rotYMat[i] = 1;
+        rotYAMat[i] = 1;
+        rotYBMat[i] = 1;
+        rotYCMat[i] = 1;
+        
         rotZAMat[i] = 1;
+        rotZBMat[i] = 1;
+        rotZCMat[i] = 1;
     }
+    
+    transMat[12] = tX;
 
 	
 	var verts = [];
@@ -443,10 +880,7 @@ function init(){
 
     
     
-//    request.open('GET', fileName2, false); // Create a request to acquire the file
-//    request.send();
-//
-//    numVerts =  faces.length;
+
 
     
 	
@@ -462,23 +896,16 @@ function init(){
 	gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(faces), gl.STATIC_DRAW);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, null);
 	gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, Index_Buffer);
-
-    var textureCoordAttribute = gl.getAttribLocation(gl.program, "aTextureCoord");
-    gl.enableVertexAttribArray(textureCoordAttribute);
+    
+    // Diff start here
+    
     var texture_buffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, texture_buffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textCoords), gl.STATIC_DRAW);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(verts), gl.STATIC_DRAW);
+    var textureCoordAttribute = gl.getAttribLocation(gl.program, "aTextureCoord");
+    gl.vertexAttribPointer(textureCoordAttribute, 3, gl.FLOAT, false, 0, 0);
+	gl.enableVertexAttribArray(textureCoordAttribute);  //Duplicate
     
-    gl.bindBuffer(gl.ARRAY_BUFFER, texture_buffer);
-    gl.vertexAttribPointer(textureCoordAttribute, 2, gl.FLOAT, false, 0, 0);
-	
-	//uFrame = gl.getUniformLocation(gl.program, "uFrame");
-    gl.uniform1i(gl.getUniformLocation(gl.program, "uSampler"), 0);
-
-
-    var cubeTexture = gl.createTexture();
-
-    gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeTexture);
 
     const faceInfos = [
   {
@@ -504,10 +931,17 @@ function init(){
   {
     target: gl.TEXTURE_CUBE_MAP_NEGATIVE_Z, 
     url: '256x256 images/space.png',
-  },
+  }
 ];
-
-faceInfos.forEach((faceInfo) => {
+    
+    
+var cubeTexture = gl.createTexture();
+    gl.activeTexture(gl.TEXTURE0);
+gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeTexture);
+    
+    
+    
+faceInfos.forEach(function(faceInfo){
   const {target, url} = faceInfo;
  
   const level = 0;
@@ -516,21 +950,39 @@ faceInfos.forEach((faceInfo) => {
   const height = 512;
   const format = gl.RGBA;
   const type = gl.UNSIGNED_BYTE;
- 
+                  
+                  
+//  gl.TexParameteri(target, gl.TEXTURE_BASE_LEVEL, 0);
+//  gl.TexParameteri(target, gl.TEXTURE_MAX_LEVEL, 0);
   gl.texImage2D(target, level, internalFormat, width, height, 0, format, type, null);
  
+                  console.log("Hi");
+                  
   const image = new Image();
   image.src = url;
   image.addEventListener('load', function() {
     gl.bindTexture(gl.TEXTURE_CUBE_MAP, cubeTexture);
     gl.texImage2D(target, level, internalFormat, format, type, image);
     gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
+                         
+                      
+                         
   });
 });
 
+    console.log("H");
+    
 gl.generateMipmap(gl.TEXTURE_CUBE_MAP);
 gl.texParameteri(gl.TEXTURE_CUBE_MAP, gl.TEXTURE_MIN_FILTER, gl.LINEAR_MIPMAP_LINEAR);
 
+
+    
+    //diff ends here
+    
+    gl.uniform1i(gl.getUniformLocation(gl.program, "uSampler"), 0); // this is in mine
+
+    
 	render();
 
+    
 }
